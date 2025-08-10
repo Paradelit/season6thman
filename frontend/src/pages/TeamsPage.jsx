@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useEffect, useState } from 'react';
 import AddTeamForm from '../components/AddTeamForm';
 import axios from 'axios';
 import { Container, Row, Col, Button, Form, ListGroup, Card } from 'react-bootstrap';

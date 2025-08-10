@@ -1,5 +1,6 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/HomePage"; // Keep or remove?
 import TeamsPage from "./pages/TeamsPage";
 import PlayersPage from "./pages/PlayersPage";
 import DrillsPage from "./pages/DrillsPage";
