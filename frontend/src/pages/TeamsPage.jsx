@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AddTeamForm from '../components/AddTeamForm';
+import axios from 'axios';
+import { Container, Row, Col, Button, Form, ListGroup, Card } from 'react-bootstrap';
 
 const TeamsPage = () => {
   const [teams, setTeams] = useState([]);
@@ -8,8 +10,8 @@ const TeamsPage = () => {
 
   const fetchTeams = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/teams");
-      const data = await res.json();
+      const response = await axios.get("http://localhost:3000/api/teams");
+      const data = response.data;
       setTeams(data);
     } catch (err) {
       console.error("Error al cargar equipos:", err);
@@ -25,19 +27,13 @@ const TeamsPage = () => {
   };
 
   const handleDelete = async (id) => {
-    try {
-      const res = await fetch(`http://localhost:3000/api/teams/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
-        fetchTeams();
-      } else {
-        const data = await res.json();
-        alert("❌ Error al eliminar equipo: " + data.error);
+    if (window.confirm("¿Estás seguro de que quieres eliminar este equipo?")) {
+      try {
+        await axios.delete(`http://localhost:3000/api/teams/${id}`);
+        fetchTeams(); 
+      } catch (err) {
+        console.error("Error al eliminar equipo:", err);
       }
-    } catch (err) {
-      console.error("Error al eliminar:", err);
     }
   };
 
@@ -53,21 +49,9 @@ const TeamsPage = () => {
 
   const handleUpdate = async (id) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/teams/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: editingName }),
-      });
-
-      if (res.ok) {
-        cancelEditing();
-        fetchTeams();
-      } else {
-        const data = await res.json();
-        alert("❌ Error al actualizar equipo: " + data.error);
-      }
+      await axios.put(`http://localhost:3000/api/teams/${id}`, { name: editingName });
+      cancelEditing();
+      fetchTeams(); // Refresh the list
     } catch (err) {
       console.error("Error al actualizar:", err);
     }
@@ -76,42 +60,68 @@ const TeamsPage = () => {
   return (
     <div style={{ padding: "1rem" }}>
       <h1>Página de Equipos</h1>
+      <Container className="mt-4">
+        <Row className="mt-4">
+          {/* Formulario de agregar/editar */}
+          <Col md={5} className="mb-4">
+            <Card>
+              <Card.Body>
+                <Card.Title>{editingId ? 'Editar Equipo' : 'Agregar Nuevo Equipo'}</Card.Title>
+                {editingId ? (
+                  <Form onSubmit={(e) => { e.preventDefault(); handleUpdate(editingId); }}>
+                    <Form.Group className="mb-3">
+                      <Form.Control
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        required
+                      />
+                    </Form.Group>
+                    <Button variant="primary" type="submit" className="me-2">
+                      Guardar
+                    </Button>
+                    <Button variant="secondary" onClick={cancelEditing}>
+                      Cancelar
+                    </Button>
+                  </Form>
+                ) : (
+                  <AddTeamForm onTeamCreated={handleTeamCreated} />
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
 
-      <AddTeamForm onTeamCreated={handleTeamCreated} />
-
-      <h2>Lista de Equipos</h2>
-
-      {teams.length === 0 ? (
-        <p>No hay equipos aún.</p>
-      ) : (
-        <ul>
-          {teams.map((team) => (
-            <li key={team.id}>
-              {editingId === team.id ? (
-                <>
-                  <input
-                    type="text"
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                  />
-                  <button onClick={() => handleUpdate(team.id)}>💾 Guardar</button>
-                  <button onClick={cancelEditing}>❌ Cancelar</button>
-                </>
-              ) : (
-                <>
-                  🏀 {team.name}
-                  <button onClick={() => startEditing(team.id, team.name)} style={{ marginLeft: '1rem' }}>
-                    ✏️ Editar
-                  </button>
-                  <button onClick={() => handleDelete(team.id)} style={{ marginLeft: '0.5rem' }}>
-                    🗑 Eliminar
-                  </button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+          {/* Lista de equipos */}
+          <Col md={7}>
+            <Card>
+              <Card.Body>
+                <Card.Title>Lista de Equipos</Card.Title>
+                {teams.length === 0 ? (
+                  <p>No hay equipos aún.</p>
+                ) : (
+                  <ListGroup>
+                    {teams.map((team) => (
+                      <ListGroup.Item key={team.id} className="d-flex justify-content-between align-items-center">
+                        <div>
+                          🏀 {team.name}
+                        </div>
+                        <div>
+                          <Button variant="warning" size="sm" className="me-2" onClick={() => startEditing(team.id, team.name)}>
+                            ✏️ Editar
+                          </Button>
+                          <Button variant="danger" size="sm" onClick={() => handleDelete(team.id)}>
+                            🗑 Eliminar
+                          </Button>
+                        </div>
+                      </ListGroup.Item>
+                    ))}
+                  </ListGroup>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };
