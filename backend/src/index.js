@@ -6,7 +6,7 @@ const playersRoutes = require('./routes/players');
 const drillsRoutes = require('./routes/drills');
 const workoutsRoutes = require('./routes/workouts');
 
-app.use(cors());
+app.use(cors({ origin: ['https://5173-firebase-season6thman-1754828668482.cluster-64pjnskmlbaxowh5lzq6i7v4ra.cloudworkstations.dev', 'https://9000-firebase-season6thman-1754828668482.cluster-64pjnskmlbaxowh5lzq6i7v4ra.cloudworkstations.dev'] }));
 app.use(express.json());
 
 app.use('/api/teams', teamsRoutes);
